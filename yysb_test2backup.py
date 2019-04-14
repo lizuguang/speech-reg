@@ -1,4 +1,4 @@
-import tkinter.messagebox
+﻿import tkinter.messagebox
 import tkinter as tk
 from tkinter import ttk
 from tkinter import scrolledtext
@@ -22,7 +22,7 @@ API_KEY = 'YvPbyRbqvwt0VDq8RK0GXRxF'
 SECRET_KEY = 'GPIvnPuYf33OwSvYYf4bta2YN0HL0SBH'
 DST=('192.168.3.120',10101)
 CMDDST=('192.168.3.120',10102)
-cmd = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) #建立一个基于UDP的Socket
+cmd = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) #建立一个基于 UDP的Socket
  #xiugaide==================================================
 CMDDST=('192.168.3.120',10102)
 cmd = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) #建立一个基于UDP的Socket
