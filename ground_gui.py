@@ -1,4 +1,4 @@
-﻿import tkinter.messagebox
+import tkinter.messagebox
 import tkinter as tk
 from tkinter import ttk
 from tkinter import scrolledtext
@@ -22,12 +22,12 @@ API_KEY = 'YvPbyRbqvwt0VDq8RK0GXRxF'
 SECRET_KEY = 'GPIvnPuYf33OwSvYYf4bta2YN0HL0SBH'
 DST=('192.168.3.120',10101)
 CMDDST=('192.168.3.120',10102)
-cmd = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) #建立一个基于 UDP的Socket
+cmd = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) #建立一个基于UDP的Socket
  #xiugaide==================================================
 CMDDST=('192.168.3.120',10102)
 cmd = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) #建立一个基于UDP的Socket
 loc=[]
-freq_list=np.array([88.5,93.7,101.1])
+freq_list=np.array([88.5])
 current_freq=88.5#dang qian pin lv
 scan=0
  #xiugaide==================================================
@@ -78,6 +78,7 @@ switch4.place(x = 760, y = 460, width = 220)
 switch5 = tk.LabelFrame(GUI,text = "",padx = 10,pady = 10)
 switch5.place(x = 760, y = 510, width = 220)
 #语音识别
+
 def reco(fname,client,c_freq):
     with open(fname, 'rb') as fp:
         result=client.asr(fp.read(), 'wav', 16000, {'dev_pid': 1537,})
@@ -118,8 +119,8 @@ def reco(fname,client,c_freq):
                         if keywords[i] in line_list:
                                 ciku.append(keywords[i])
                         i +=1
-                times = time.strftime("%Y-%m-%d %H:%M:%S",time.localtime())
-                Information_Window.insert("end",'['+str(times)+'频率:'+str(c_freq)+'MHz'+']'+str(lines) + '\n')# 在操作信息窗口显示发送的指令并换行，end为在窗口末尾处显示
+                times = time.strftime("%m-%d %H:%M:%S",time.localtime())
+                Information_Window.insert("end",'['+str(times)+' 频率:'+str(c_freq)+'MHz'+']'+str(lines) + '\n')# 在操作信息窗口显示发送的指令并换行，end为在窗口末尾处显示
                 Information_Window.see("end")
                 Guanjianci_Window.insert("end",str(segStat) + '\n') # 在操作信息窗口显示发送的指令并换行，end为在窗口末尾处显示
                 Guanjianci_Window.see("end") # 此处为显示操作信息窗口进度条末尾内容，以上两行
@@ -127,9 +128,9 @@ def reco(fname,client,c_freq):
                 if m > 0:
                         i = 0
                         while i<m:
-                                fd=Thread(target=showin,args= (ciku[i],))
+                                fd=Thread(target=showin,args= (c_freq,))
                                 fd.start()
-                                Gj_Window.insert("end",'['+str(times)+'频率:'+str(c_freq)+'MHz'+']'+'搜索到关键词：'+str(ciku[i])+'\n')
+                                Gj_Window.insert("end",'['+str(times)+' 频率:'+str(c_freq)+'MHz'+']'+'\n'+'搜索到关键词：'+str(ciku[i])+'\n')
                                 Gj_Window.see("end")
                                 i +=1
         else:
@@ -145,7 +146,23 @@ def WriteData():
     
 tk.Button(Send, text="设置", command=WriteData).grid(pady=1, sticky=tk.E)
 def showin(s):
-    tkinter.messagebox.showinfo("提示","搜索到关键词:"+str(s))
+    root = tk.Tk()
+    root.title("提示")
+    root.geometry("200x80+600+500")
+    l = tk.Label(root,text = '找到“黑广播”',font = ("宋体",12))
+    r = tk.Label(root,text = '频率：'+str(s),font = ("宋体",14),fg='red')
+    tm = tk.Label(root,fg='blue', anchor = 'w')
+    tm.place(x=1, y= 60, width =150 )
+    l.place(x = 50,y =10)
+    r.place(x = 50, y =30)
+    def autoclose():
+        for i in range(6):
+            tm['text'] = '距离窗口关闭还有{}秒'.format(6-i)
+            time.sleep(1)
+        root.destroy()
+    t = Thread(target = autoclose )
+    t.start()
+    root.mainloop()
 def fftp():
     #xiugaide==================================================
     global loc
@@ -211,7 +228,16 @@ def fftp():
             x=[]
         else:
             x.append(int.from_bytes(data,'little'))
-            
+#========================================================            
+def change_freq():
+    cmd.sendto(b'\x00\x00\x05\x00',CMDDST)
+    time.sleep(2)
+    cmd.sendto(b'\x00\x00\x04\x00',CMDDST)
+    time.sleep(5)
+    cmd.sendto(b'\x00\x00\x05\x00',CMDDST)
+    time.sleep(3)
+    cmd.sendto(b'\x00\x00\x03\x00',CMDDST)
+#========================================================
 def fmdm():
     global scan
     global freq_list,now
@@ -282,16 +308,12 @@ def fmdm():
                         for sd in thd:
                             if(thd[sd].isAlive()):
                                 thd[sd].join()
-                        freq_list=np.array([])
-                        cmd.sendto(b'\x00\x00\x05\x00',CMDDST)
-                        time.sleep(5)
-                        cmd.sendto(b'\x00\x00\x04\x00',CMDDST)
-                        time.sleep(5)
-                        cmd.sendto(b'\x00\x00\x05\x00',CMDDST)
-                        #print('\n可疑频点集(MHz):',freq_list)
-                        time.sleep(5)
-                        cmd.sendto(b'\x00\x00\x03\x00',CMDDST)
-                    cmd.sendto((int(freq_list[now]*10)-880).to_bytes(2,'little')+b'\x01\x00',CMDDST)
+                        freq_list=np.array([88.5])                    
+                        cg=Thread(target=change_freq,)
+                        cg.start()
+                        while(cg.isAlive()):
+                            data=st.recv(6)
+                    cmd.sendto((int(freq_list[now]*10)-880).to_bytes(2,'little')+b'\x01\x00',CMDDST)                            
                     while count<64000:
                         data=st.recv(6)
                         count +=1
